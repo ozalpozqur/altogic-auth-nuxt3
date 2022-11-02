@@ -1,37 +1,29 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '~/stores/useAuth';
+import altogic from '~/libs/altogic';
 
-const router = useRouter();
-const auth = useAuthStore();
-const email = ref('');
-const password = ref('');
-const errors = ref(null);
+const successMessage = ref('');
 const loading = ref(false);
+const email = ref('');
+const errors = ref(null);
 
 definePageMeta({
     middleware: ['guest'],
 });
 useHead({
-    title: 'Login',
+    title: 'Login with magic link',
 });
 
 async function loginHandler() {
     loading.value = true;
     errors.value = null;
-    const { user, errors: apiErrors } = await $fetch('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({
-            email: email.value,
-            password: password.value,
-        }),
-    });
+    const { errors: apiErrors } = await altogic.auth.sendMagicLinkEmail(email.value);
     loading.value = false;
     if (apiErrors) {
         errors.value = apiErrors;
     } else {
-        auth.setUser(user);
-        router.push('/profile');
+        email.value = '';
+        successMessage.value = 'Email sent! Check your inbox.';
     }
 }
 </script>
@@ -39,7 +31,11 @@ async function loginHandler() {
 <template>
     <section class="flex flex-col items-center justify-center h-96 gap-4">
         <form @submit.prevent="loginHandler" class="flex flex-col gap-2 w-full md:w-96">
-            <h1 class="self-start text-3xl font-bold">Login to your account</h1>
+            <h1 class="self-start text-3xl font-bold">Login with magic link</h1>
+
+            <div v-if="successMessage" class="bg-green-600 text-white text-[13px] p-2">
+                {{ successMessage }}
+            </div>
 
             <div v-if="errors" class="bg-red-600 text-white text-[13px] p-2">
                 <p v-for="(error, index) in errors.items" :key="index">
@@ -48,7 +44,6 @@ async function loginHandler() {
             </div>
 
             <input v-model="email" type="email" placeholder="Type your email" required />
-            <input v-model="password" type="password" placeholder="Type your password" required />
             <div class="flex justify-between gap-4">
                 <NuxtLink class="text-indigo-600" to="/register">Don't have an account? Register now</NuxtLink>
                 <button
@@ -56,7 +51,7 @@ async function loginHandler() {
                     type="submit"
                     class="border py-2 px-3 border-gray-500 hover:bg-gray-500 hover:text-white transition shrink-0"
                 >
-                    Login
+                    Send magic link
                 </button>
             </div>
         </form>
