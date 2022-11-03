@@ -1,6 +1,6 @@
 import altogic from '~/libs/altogic';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
 	const { email, password } = await readBody(event);
 	const { user, session, errors } = await altogic.auth.signInWithEmail(email, password);
 
@@ -9,5 +9,6 @@ export default defineEventHandler(async (event) => {
 	}
 
 	altogic.auth.setSessionCookie(session.token, event.req, event.res);
+	altogic.auth.setSession(session);
 	return { user, session };
 });
