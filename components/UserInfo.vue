@@ -49,7 +49,7 @@ async function saveName() {
 			/>
 		</div>
 		<div class="space-y-4" v-else>
-			<h1 class="text-3xl">Hello, {{ auth.user.name }}</h1>
+			<h1 class="text-3xl">Hello, {{ auth?.user?.name }}</h1>
 			<button @click="openChangeMode" class="border p-2">Change name</button>
 		</div>
 		<div v-if="errors">

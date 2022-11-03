@@ -19,13 +19,13 @@ async function logoutSession(session) {
 		<ul class="flex flex-col gap-2">
 			<li :key="session.token" class="flex justify-between gap-12" v-for="session in sessions">
 				<div>
-					<span v-if="session.isCurrent"> Current Session </span>
-					<span v-else> <strong>Device name: </strong>{{ session.userAgent.device.family }}</span>
+					<span v-if="session?.isCurrent"> Current Session </span>
+					<span v-else> <strong>Device name: </strong>{{ session?.userAgent?.device?.family }}</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<span>{{ new Date(session.creationDtm).toLocaleDateString('en-US') }}</span>
 					<button
-						v-if="!session.isCurrent"
+						v-if="!session?.isCurrent"
 						@click="logoutSession(session)"
 						class="border grid place-items-center p-2 h-8 w-8 aspect-square leading-none"
 					>
