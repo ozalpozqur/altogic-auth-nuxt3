@@ -7,6 +7,7 @@ const API_KEY =
 
 const altogic = createClient(ENV_URL, CLIENT_KEY, {
 	apiKey: API_KEY,
+	signInRedirect: '/login',
 });
 
 export default altogic;

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/useAuth';
-import altogic from '~/libs/altogic';
 
 const auth = useAuthStore();
 const router = useRouter();

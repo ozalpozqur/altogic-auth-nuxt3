@@ -1,31 +1,40 @@
-# Authentication with Nuxt 3 & Altogic
+# How to Authenticate Email and Password Using Nuxt 3 & Altogic
+
 
 ## Introduction
-**Altogic** is a Backend as a Service (BaaS) platform and provides a variety of services in modern web and mobile development. Most of the modern applications using React or other libraries/frameworks require to know the identity of a user. And this necessity allows an app to securely save user data and session in the cloud and provide more personalized functionalities and views to users.
+[Altogic](https://www.altogic.com) is a Backend as a Service (BaaS) platform and provides a variety of services in modern web and mobile development. Most modern applications using React or other libraries/frameworks require knowing the identity of a user. And this necessity allows an app to securely save user data and session in the cloud and provide more personalized functionalities and views to users.
 
-Altogic has an Authentication service that integrates and implements well in JAMstack apps. It has a ready-to-use Javascript client library, and it supports many authentication providers such as email/password, phone number, magic link, and OAuth providers like Google, Facebook, Twitter, Github, etc.,
+Altogic has an authentication service that integrates and implements well in JAMstack apps. It has a ready-to-use [Javascript client library](https://www.npmjs.com/package/altogic), and it supports many authentication providers such as email/password, phone number, magic link, and OAuth providers like Google, Facebook, Twitter, Github, etc.,
 
-In this tutorial, we will implement email/password authentication with Vue.js and take a look how as a Vue developer we build applications and integrate with Altogic Authentication.
+In this tutorial, we will implement email/password authentication with Nuxt 3 and take a look at how as a Nuxt 3 developer, we build applications and integrate with Altogic Authentication.
 
-After completion of this tutorial, you will learn:
+After completion of this tutorial, you will learn the following:
 
-* How to create sample screens to display forms like login and signup.
-* How to create a home screen and authorize only logged-in users.
-* How to create different routes using the vue-router.
-* How to create an authentication flow by conditionally rendering between these pages whether a user is logged-in or not.
-* How to authenticate users using magic link
-* How to update user profile info and upload a profile picture
-* And we will integrate Altogic authentication with the email/password method.
+- How to create sample screens to display forms like login and signup.
+- How to create a home screen and authorize only logged-in users.
+- How to create an authentication flow by conditionally rendering between these pages whether a user is logged in.
+- How to authenticate users using the magic link
+- How to update user profile info and upload a profile picture
+- How to manage active sessions of a user
+- And we will integrate Altogic authentication with the email/password method.
 
-If you are new to Nuxt 3 applications, this tutorial is definitely for you to understand the basics and even advanced concepts.
+If you are new to Vue applications, this tutorial is definitely for you to understand the basics and even advanced concepts.
 
 
 ## Prerequisites
-* Altogic account (if you have not one yet, you can create an account by sign-in up to **Altogic**)
-* Familiarity with the command line
-* Any text editor or IDE (WebStorm, VsCode, Sublime, Atom, etc.)
-* Basic knowledge of Javascript
-* Basic knowledge of Nuxt 3
+To complete this tutorial, make sure you have installed the following tools and utilities on your local development environment.
+- [VsCode](https://code.visualstudio.com/download)
+- [NodeJS](https://nodejs.org/en/download/)
+- [Nuxt.js App](https://v3.nuxtjs.org/getting-started/installation)
+- You also need an Altogic Account. If you do not have one, you can create an account by [signin up for Altogic](https://designer.altogic.com/).
+
+## How email-based sign-up works in Altogic
+By default, when you create an app in Altogic, email-based authentication is enabled. In addition, during email-based authentication, the email address of the user is also verified. Below you can find the flow of email and password-based sign-up process.
+
+![Authentication Flow](./github/auth-flow.png)
+
+If email verification is disabled, then after step 2, Altogic immediately returns a new session to the user, meaning that steps after step #2 in the above flow are not executed. You can easily configure email-based authentication settings from the **App Settings > Authentication** in Altogic Designer. One critical parameter you need to specify is the Redirect URL, you can also customize this parameter from **App Settings > Authentication**. Finally, you can also customize the email message template from the A**pp Settings > Authentication > Messaget Templates**.
+
 
 ## Creating an Altogic App
 We will use Altogic as a backend service platform, so let’s visit [Altogic Designer](https://designer.altogic.com/) and create an account.
@@ -58,9 +67,6 @@ Click the **Home** icon at the left sidebar to copy the envUrl and clientKey.
 
 Once the user created successfully, our Vue.js app will route the user to the Verification page, and a verification email will be sent to the user’s email address. When the user clicks the link in the mail, the user will navigate to the redirect page to grant authentication rights. After successfully creating a session on the Redirect page, users will be redirected to the Home page.
 
-## Quick Tip
-> If you want, you can deactivate or customize the mail verification from **App Settings -> Authentication** in Logic Designer.
-
 ## Create a Nuxt 3 project
 Make sure you have an up-to-date version of Node.js installed, then run the following command in your command line
 ```bash
@@ -70,9 +76,13 @@ Open altogic-auth-nuxt3 folder in Visual Studio Code:
 ```bash
 code altogic-auth-nuxt3
 ```
-Install the dependencies:
+## Installing Altogic Client Library
 ```bash
-npm install altogic pinia
+npm install altogic
+```
+## Installing State Management Library
+```bash
+npm install pinia
 ```
 
 ## Create Routes
@@ -93,23 +103,39 @@ Let's create some views in **pages/** folder as below:
 ```vue
 <script setup>
 definePageMeta({
-    middleware: ['guest'],
+	middleware: ['guest'],
 });
 useHead({
-    title: 'Altogic Auth Sample With Nuxt3',
+	title: 'Altogic Auth Sample With Nuxt3',
 });
 </script>
 
 <template>
-    <div class="flex items-center justify-center gap-4 h-screen">
-        <NuxtLink class="border px-4 py-2 font-medium text-xl" to="/login-with-magic-link"
-            >Login With Magic Link</NuxtLink
-        >
-        <NuxtLink class="border px-4 py-2 font-medium text-xl" to="/login">Login</NuxtLink>
-        <NuxtLink class="border px-4 py-2 font-medium text-xl" to="/register">Register</NuxtLink>
-    </div>
+	<div class="flex items-center justify-center gap-4 h-screen">
+		<NuxtLink class="border px-4 py-2 font-medium text-xl" to="/login-with-magic-link"
+		>Login With Magic Link</NuxtLink
+		>
+		<NuxtLink class="border px-4 py-2 font-medium text-xl" to="/login">Login</NuxtLink>
+		<NuxtLink class="border px-4 py-2 font-medium text-xl" to="/register">Register</NuxtLink>
+	</div>
 </template>
+```
 
+## Let's create an Altogic Client instance
+Create a folder named **libs** in your project root directory and put a file named **altogic.js** in it. Then paste the code below into the file.
+```js
+// libs/altogic.js
+import { createClient } from 'altogic';
+
+const ENV_URL = ""; // replace with your envUrl
+const CLIENT_KEY = ""; // replace with your clientKey
+const API_KEY = ""; // replace with your apiKey
+
+const altogic = createClient(ENV_URL, CLIENT_KEY, {
+	apiKey: API_KEY,
+});
+
+export default altogic;
 ```
 
 ### Replacing pages/login.vue with the following code:
@@ -125,57 +151,62 @@ const errors = ref(null);
 const loading = ref(false);
 
 definePageMeta({
-    middleware: ['guest'],
+	middleware: ['guest'],
 });
 useHead({
-    title: 'Login',
+	title: 'Login',
 });
 
 async function loginHandler() {
-    loading.value = true;
-    errors.value = null;
-    const { user, errors: apiErrors } = await $fetch('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({
-            email: email.value,
-            password: password.value,
-        }),
-    });
-    loading.value = false;
-    if (apiErrors) {
-        errors.value = apiErrors;
-    } else {
-        auth.setUser(user);
-        router.push('/profile');
-    }
+	loading.value = true;
+	errors.value = null;
+	const {
+		user,
+		errors: apiErrors,
+		session,
+	} = await $fetch('/api/auth/login', {
+		method: 'POST',
+		body: JSON.stringify({
+			email: email.value,
+			password: password.value,
+		}),
+	});
+	loading.value = false;
+	if (apiErrors) {
+		errors.value = apiErrors;
+	} else {
+		auth.setUser(user);
+		auth.setSession(session);
+		router.push('/profile');
+	}
 }
 </script>
 
 <template>
-    <section class="flex flex-col items-center justify-center h-96 gap-4">
-        <form @submit.prevent="loginHandler" class="flex flex-col gap-2 w-full md:w-96">
-            <h1 class="self-start text-3xl font-bold">Login to your account</h1>
+	<section class="flex flex-col items-center justify-center h-96 gap-4">
+		<form @submit.prevent="loginHandler" class="flex flex-col gap-2 w-full md:w-96">
+			<h1 class="self-start text-3xl font-bold">Login to your account</h1>
 
-            <div v-if="errors" class="bg-red-600 text-white text-[13px] p-2">
-                <p v-for="(error, index) in errors.items" :key="index">
-                    {{ error.message }}
-                </p>
-            </div>
+			<div v-if="errors" class="bg-red-600 text-white text-[13px] p-2">
+				<p v-for="(error, index) in errors.items" :key="index">
+					{{ error.message }}
+				</p>
+			</div>
 
-            <input v-model="email" type="email" placeholder="Type your email" required />
-            <input v-model="password" type="password" placeholder="Type your password" required />
-            <div class="flex justify-between gap-4">
-                <NuxtLink class="text-indigo-600" to="/register">Don't have an account? Register now</NuxtLink>
-                <button
-                    :disabled="loading"
-                    type="submit"
-                    class="border py-2 px-3 border-gray-500 hover:bg-gray-500 hover:text-white transition shrink-0"
-                >
-                    Login
-                </button>
-            </div>
-        </form>
-    </section>
+			<input v-model="email" type="email" placeholder="Type your email" required />
+			<input v-model="password" type="password" placeholder="Type your password" required />
+			<div class="flex justify-between gap-4">
+				<NuxtLink class="text-indigo-600" to="/register">Don't have an account? Register now</NuxtLink>
+				<button
+					:disabled="loading"
+					type="submit"
+					class="border py-2 px-3 border-gray-500 hover:bg-gray-500 hover:text-white transition shrink-0"
+				>
+					Login
+				</button>
+			</div>
+		</form>
+	</section>
 </template>
 ```
 
@@ -190,54 +221,54 @@ const email = ref('');
 const errors = ref(null);
 
 definePageMeta({
-    middleware: ['guest'],
+	middleware: ['guest'],
 });
 useHead({
-    title: 'Login with magic link',
+	title: 'Login with magic link',
 });
 
 async function loginHandler() {
-    loading.value = true;
-    errors.value = null;
-    const { errors: apiErrors } = await altogic.auth.sendMagicLinkEmail(email.value);
-    loading.value = false;
-    if (apiErrors) {
-        errors.value = apiErrors;
-    } else {
-        email.value = '';
-        successMessage.value = 'Email sent! Check your inbox.';
-    }
+	loading.value = true;
+	errors.value = null;
+	const { errors: apiErrors } = await altogic.auth.sendMagicLinkEmail(email.value);
+	loading.value = false;
+	if (apiErrors) {
+		errors.value = apiErrors;
+	} else {
+		email.value = '';
+		successMessage.value = 'Email sent! Check your inbox.';
+	}
 }
 </script>
 
 <template>
-    <section class="flex flex-col items-center justify-center h-96 gap-4">
-        <form @submit.prevent="loginHandler" class="flex flex-col gap-2 w-full md:w-96">
-            <h1 class="self-start text-3xl font-bold">Login with magic link</h1>
+	<section class="flex flex-col items-center justify-center h-96 gap-4">
+		<form @submit.prevent="loginHandler" class="flex flex-col gap-2 w-full md:w-96">
+			<h1 class="self-start text-3xl font-bold">Login with magic link</h1>
 
-            <div v-if="successMessage" class="bg-green-600 text-white text-[13px] p-2">
-                {{ successMessage }}
-            </div>
+			<div v-if="successMessage" class="bg-green-600 text-white text-[13px] p-2">
+				{{ successMessage }}
+			</div>
 
-            <div v-if="errors" class="bg-red-600 text-white text-[13px] p-2">
-                <p v-for="(error, index) in errors.items" :key="index">
-                    {{ error.message }}
-                </p>
-            </div>
+			<div v-if="errors" class="bg-red-600 text-white text-[13px] p-2">
+				<p v-for="(error, index) in errors.items" :key="index">
+					{{ error.message }}
+				</p>
+			</div>
 
-            <input v-model="email" type="email" placeholder="Type your email" required />
-            <div class="flex justify-between gap-4">
-                <NuxtLink class="text-indigo-600" to="/register">Don't have an account? Register now</NuxtLink>
-                <button
-                    :disabled="loading"
-                    type="submit"
-                    class="border py-2 px-3 border-gray-500 hover:bg-gray-500 hover:text-white transition shrink-0"
-                >
-                    Send magic link
-                </button>
-            </div>
-        </form>
-    </section>
+			<input v-model="email" type="email" placeholder="Type your email" required />
+			<div class="flex justify-between gap-4">
+				<NuxtLink class="text-indigo-600" to="/register">Don't have an account? Register now</NuxtLink>
+				<button
+					:disabled="loading"
+					type="submit"
+					class="border py-2 px-3 border-gray-500 hover:bg-gray-500 hover:text-white transition shrink-0"
+				>
+					Send magic link
+				</button>
+			</div>
+		</form>
+	</section>
 </template>
 ```
 
@@ -257,81 +288,82 @@ const isNeedToVerify = ref(false);
 const loading = ref(false);
 
 definePageMeta({
-    middleware: ['guest'],
+	middleware: ['guest'],
 });
 useHead({
-    title: 'Register',
+	title: 'Register',
 });
 
 async function registerHandler() {
-    loading.value = true;
-    errors.value = null;
-    const {
-        user,
-        errors: apiErrors,
-        session,
-    } = await $fetch('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({
-            email: email.value,
-            password: password.value,
-            name: name.value,
-        }),
-    });
-    if (apiErrors) {
-        errors.value = apiErrors;
-        return;
-    }
-    email.value = '';
-    password.value = '';
-    name.value = '';
+	loading.value = true;
+	errors.value = null;
+	const {
+		user,
+		errors: apiErrors,
+		session,
+	} = await $fetch('/api/auth/register', {
+		method: 'POST',
+		body: JSON.stringify({
+			email: email.value,
+			password: password.value,
+			name: name.value,
+		}),
+	});
+	if (apiErrors) {
+		errors.value = apiErrors;
+		return;
+	}
+	email.value = '';
+	password.value = '';
+	name.value = '';
 
-    if (!session) {
-        isNeedToVerify.value = true;
-        return;
-    }
+	if (!session) {
+		isNeedToVerify.value = true;
+		return;
+	}
 
-    auth.setUser(user);
-    router.push({ name: 'profile' });
+	auth.setUser(user);
+	auth.setSession(session);
+	router.push({ name: 'profile' });
 }
 </script>
 
 <template>
-    <section class="flex flex-col items-center justify-center h-96 gap-4">
-        <form @submit.prevent="registerHandler" class="flex flex-col gap-2 w-full md:w-96">
-            <h1 class="self-start text-3xl font-bold">Create an account</h1>
+	<section class="flex flex-col items-center justify-center h-96 gap-4">
+		<form @submit.prevent="registerHandler" class="flex flex-col gap-2 w-full md:w-96">
+			<h1 class="self-start text-3xl font-bold">Create an account</h1>
 
-            <div v-if="isNeedToVerify" class="bg-green-500 text-white p-2">
-                Your account has been created. Please check your email to verify your account.
-            </div>
+			<div v-if="isNeedToVerify" class="bg-green-500 text-white p-2">
+				Your account has been created. Please check your email to verify your account.
+			</div>
 
-            <div v-if="errors" class="bg-red-600 text-white text-[13px] p-2">
-                <p v-for="(error, index) in errors.items" :key="index">
-                    {{ error.message }}
-                </p>
-            </div>
+			<div v-if="errors" class="bg-red-600 text-white text-[13px] p-2">
+				<p v-for="(error, index) in errors.items" :key="index">
+					{{ error.message }}
+				</p>
+			</div>
 
-            <input v-model="email" type="email" placeholder="Type your email" required />
-            <input v-model="name" type="text" placeholder="Type your name" required />
-            <input
-                v-model="password"
-                type="password"
-                autocomplete="new-password"
-                placeholder="Type your password"
-                required
-            />
-            <div class="flex justify-between gap-4">
-                <NuxtLink class="text-indigo-600" to="/login">Already have an account?</NuxtLink>
-                <button
-                    type="submit"
-                    :disabled="loading"
-                    class="border py-2 px-3 border-gray-500 hover:bg-gray-500 hover:text-white transition shrink-0"
-                >
-                    Register
-                </button>
-            </div>
-        </form>
-    </section>
+			<input v-model="email" type="email" placeholder="Type your email" required />
+			<input v-model="name" type="text" placeholder="Type your name" required />
+			<input
+				v-model="password"
+				type="password"
+				autocomplete="new-password"
+				placeholder="Type your password"
+				required
+			/>
+			<div class="flex justify-between gap-4">
+				<NuxtLink class="text-indigo-600" to="/login">Already have an account?</NuxtLink>
+				<button
+					type="submit"
+					:disabled="loading"
+					class="border py-2 px-3 border-gray-500 hover:bg-gray-500 hover:text-white transition shrink-0"
+				>
+					Register
+				</button>
+			</div>
+		</form>
+	</section>
 </template>
 ```
 
@@ -342,19 +374,23 @@ import { useAuthStore } from '~/stores/useAuth';
 const auth = useAuthStore();
 
 definePageMeta({
-    middleware: ['auth'],
+	middleware: ['auth'],
 });
 
 useHead({
-    title: `${auth.user.name} - Profile`,
+	title: `${auth?.user?.name} - Profile`,
 });
 </script>
 
 <template>
-    <section class="h-screen py-4 space-y-4 flex flex-col text-center items-center">
-        <h1 class="text-3xl">Hello, {{ auth.user.name }}</h1>
-        <a href="/api/auth/logout" class="bg-gray-400 rounded py-2 px-3 text-white"> Logout </a>
-    </section>
+	<div>
+		<section class="h-screen py-4 space-y-4 flex flex-col text-center items-center">
+			<Avatar />
+			<UserInfo />
+			<Sessions />
+			<a href="/api/auth/logout" class="bg-gray-400 rounded py-2 px-3 text-white"> Logout </a>
+		</section>
+	</div>
 </template>
 ```
 
@@ -368,63 +404,68 @@ const errors = ref(null);
 const { access_token } = route.query;
 
 useHead({
-    title: 'Verify your account',
+	title: 'Verify your account',
 });
 
 onMounted(async () => {
-    const { errors: apiErrors, user } = await $fetch(`/api/auth/verify-user?access_token=${access_token}`);
-    if (apiErrors) {
-        errors.value = apiErrors;
-        return;
-    }
-    auth.setUser(user);
-    await router.push('/profile');
+	const { errors: apiErrors, user, session } = await $fetch(`/api/auth/verify-user?access_token=${access_token}`);
+	if (apiErrors) {
+		errors.value = apiErrors;
+		return;
+	}
+	auth.setUser(user);
+	auth.setSession(session);
+	await router.push('/profile');
 });
 </script>
 
 <template>
-    <section class="h-screen flex flex-col gap-4 justify-center items-center">
-        <div class="text-center" v-if="errors">
-            <p class="text-red-500 text-3xl" :key="index" v-for="(error, index) in errors.items">
-                {{ error.message }}
-            </p>
-        </div>
-        <div class="text-center" v-else>
-            <p class="text-6xl text-black">Please wait</p>
-            <p class="text-3xl text-black">You're redirecting to your profile...</p>
-        </div>
-    </section>
+	<section class="h-screen flex flex-col gap-4 justify-center items-center">
+		<div class="text-center" v-if="errors">
+			<p class="text-red-500 text-3xl" :key="index" v-for="(error, index) in errors.items">
+				{{ error.message }}
+			</p>
+		</div>
+		<div class="text-center" v-else>
+			<p class="text-6xl text-black">Please wait</p>
+			<p class="text-3xl text-black">You're redirecting to your profile...</p>
+		</div>
+	</section>
 </template>
 ```
 
-
-## Let's create an Altogic Client instance
-Create a folder named **libs** in your project root directory and put a file named **altogic.js** in it. Then paste the code below into the file.
-```js
-// libs/altogic.js
-import { createClient } from 'altogic';
-
-const ENV_URL = ""; // replace with your envUrl
-const CLIENT_KEY = ""; // replace with your clientKey
-const API_KEY = ""; // replace with your apiKey
-
-const altogic = createClient(ENV_URL, CLIENT_KEY, {
-	apiKey: API_KEY,
-});
-
-export default altogic;
-```
 
 ## Let's create authentication store
 Create a folder named **stores** in your project root folder and put a file named **useAuth.js** in it. Then paste the code below into the file.
 ```js
 // stores/useAuth.js
+import altogic from '~/libs/altogic';
+
 export const useAuthStore = defineStore('AuthStore', () => {
 	const user = ref(null);
-	const setUser = (_user) => (user.value = _user);
+	const sessionToken = ref(null);
+
+	const setUser = _user => {
+		user.value = _user;
+		altogic.auth.setUser(_user);
+	};
+
+	const setSession = _session => {
+		sessionToken.value = _session;
+		altogic.auth.setSession(typeof _session === 'string' ? { token: _session } : _session);
+	};
+
+	watchEffect(() => {
+		altogic.auth.setUser(user.value);
+		const token = typeof sessionToken.value === 'string' ? { token: sessionToken.value } : sessionToken.value;
+		altogic.auth.setSession(token);
+	});
+
 	return {
 		user,
+		sessionToken,
 		setUser,
+		setSession,
 	};
 });
 
@@ -448,7 +489,7 @@ In this file, we have created an endpoint for users to login. And here we are lo
 ```js
 import altogic from '~/libs/altogic';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
 	const { email, password } = await readBody(event);
 	const { user, session, errors } = await altogic.auth.signInWithEmail(email, password);
 
@@ -457,6 +498,7 @@ export default defineEventHandler(async (event) => {
 	}
 
 	altogic.auth.setSessionCookie(session.token, event.req, event.res);
+	altogic.auth.setSession(session);
 	return { user, session };
 });
 ```
@@ -465,7 +507,7 @@ export default defineEventHandler(async (event) => {
 ```js
 import altogic from '~/libs/altogic';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
 	const { email, password, ...rest } = await readBody(event);
 	const { user, errors, session } = await altogic.auth.signUpWithEmail(email, password, rest);
 
@@ -475,6 +517,7 @@ export default defineEventHandler(async (event) => {
 
 	if (session) {
 		altogic.auth.setSessionCookie(session.token, event.req, event.res);
+		altogic.auth.setSession(session);
 		return { user, session };
 	}
 
@@ -486,7 +529,7 @@ export default defineEventHandler(async (event) => {
 ```js
 import altogic from '~/libs/altogic';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
 	const token = getCookie(event, 'session_token');
 	await altogic.auth.signOut(token);
 	deleteCookie(event, 'session_token');
@@ -498,7 +541,7 @@ export default defineEventHandler(async (event) => {
 ```js
 import altogic from '~/libs/altogic';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
 	const { access_token } = getQuery(event);
 
 	const { errors, user, session } = await altogic.auth.getAuthGrant(access_token.toString());
@@ -508,7 +551,8 @@ export default defineEventHandler(async (event) => {
 	}
 
 	altogic.auth.setSessionCookie(session.token, event.req, event.res);
-	return { user };
+	altogic.auth.setSession(session);
+	return { user, session };
 });
 ```
 
@@ -517,10 +561,17 @@ In this file, we pull the user from altogic with the token in the cookie accordi
 ```js
 import altogic from '~/libs/altogic';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
+	const token = getCookie(event, 'session_token');
+
 	const { user } = await altogic.auth.getUserFromDBbyCookie(event.req, event.res);
-	if (user) event.context.user = user;
+
+	if (user) {
+		event.context.user = user;
+		event.context.session_token = token;
+	}
 });
+
 ```
 
 ## Create Middleware Folder
@@ -538,8 +589,9 @@ export default defineNuxtRouteMiddleware(() => {
 	const store = useAuthStore();
 	const event = useRequestEvent();
 
-	if (process.server && event.context.user) {
+	if (process.server && event.context.user && event.context.session_token) {
 		store.setUser(event.context.user);
+		store.setSession(event.context.session_token);
 	}
 });
 ```
@@ -549,10 +601,9 @@ The middleware we created for our protected routes
 ```js
 import { useAuthStore } from '~/stores/useAuth';
 
-export default defineNuxtRouteMiddleware(() => {
+export default defineNuxtRouteMiddleware(async () => {
 	const cookie = useCookie('session_token');
 	const store = useAuthStore();
-
 	if (!cookie.value && !store.user) return '/login';
 });
 ```
@@ -571,9 +622,7 @@ export default defineNuxtRouteMiddleware(() => {
 ```
 
 
-## Upload Profile Photo
-Let's create a Vue component for user can upload a profile photo. Create a folder named **components** in your project root directory.
-
+## Avatar Component for uploading profile picture
 ```vue
 <!-- components/Avatar.vue -->
 <script setup>
@@ -584,7 +633,9 @@ const loading = ref(false);
 const errors = ref(null);
 
 const userPicture = computed(() => {
-	return auth.user.profilePicture || `https://ui-avatars.com/api/?name=${auth.user.name}&background=0D8ABC&color=fff`;
+	return (
+		auth?.user?.profilePicture || `https://ui-avatars.com/api/?name=${auth?.user?.name}&background=0D8ABC&color=fff`
+	);
 });
 
 async function changeHandler(e) {
@@ -621,7 +672,7 @@ async function updateUser(data) {
 	<div>
 		<figure class="flex flex-col gap-4 items-center justify-center py-2">
 			<picture class="border rounded-full w-24 h-24 overflow-hidden">
-				<img class="object-cover w-full h-full" :src="userPicture" :alt="auth.user.name" />
+				<img class="object-cover w-full h-full" :src="userPicture" :alt="auth?.user?.name" />
 			</picture>
 		</figure>
 		<div class="flex flex-col gap-4 justify-center items-center">
@@ -638,27 +689,108 @@ async function updateUser(data) {
 </template>
 ```
 
-## Use the Avatar component on the profile page
+## UserInfo Component for updating username
 ```vue
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
+import altogic from '~/libs/altogic';
 const auth = useAuthStore();
 
-definePageMeta({
-    middleware: ['auth'],
-});
+const username = ref(auth?.user?.name);
+const loading = ref(false);
+const inputRef = ref(null);
+const changeMode = ref(false);
+const errors = ref(null);
 
-useHead({
-    title: `${auth.user.name} - Profile`,
-});
+function openChangeMode() {
+	changeMode.value = true;
+	setTimeout(() => {
+		inputRef.value.focus();
+	}, 100);
+}
+
+async function saveName() {
+	loading.value = true;
+	errors.value = null;
+
+	const { data, errors: apiErrors } = await altogic.db
+		.model('users')
+		.object(auth.user._id)
+		.update({ name: username.value });
+
+	if (apiErrors) {
+		errors.value = apiErrors[0].message;
+	} else {
+		username.value = data.name;
+		auth.setUser(data);
+	}
+
+	loading.value = false;
+	changeMode.value = false;
+}
 </script>
 
 <template>
-    <section class="h-screen py-4 space-y-4 flex flex-col text-center items-center">
-        <Avatar />
-        <h1 class="text-3xl">Hello, {{ auth.user.name }}</h1>
-        <a href="/api/auth/logout" class="bg-gray-400 rounded py-2 px-3 text-white"> Logout </a>
-    </section>
+	<section class="border p-4 w-full">
+		<div class="flex items-center justify-center" v-if="changeMode">
+			<input
+				@keyup.enter="saveName"
+				ref="inputRef"
+				type="text"
+				v-model="username"
+				class="border-none text-3xl text-center"
+			/>
+		</div>
+		<div class="space-y-4" v-else>
+			<h1 class="text-3xl">Hello, {{ auth?.user?.name }}</h1>
+			<button @click="openChangeMode" class="border p-2">Change name</button>
+		</div>
+		<div v-if="errors">
+			{{ errors }}
+		</div>
+	</section>
+</template>
+```
+
+## Sessions Component for managing sessions
+```vue
+<script setup>
+import altogic from '../libs/altogic';
+
+const auth = useAuthStore();
+let { data: sessions } = await useFetch('/api/auth/sessions', {
+	headers: useRequestHeaders(['cookie']),
+});
+async function logoutSession(session) {
+	const { errors } = await altogic.auth.signOut(session.token);
+	if (!errors) {
+		sessions.value = sessions.value.filter(s => s.token !== session.token);
+	}
+}
+</script>
+
+<template>
+	<div class="border p-4 space-y-4">
+		<p class="text-3xl">All Sessions</p>
+		<ul class="flex flex-col gap-2">
+			<li :key="session.token" class="flex justify-between gap-12" v-for="session in sessions">
+				<div>
+					<span v-if="session?.isCurrent"> Current Session </span>
+					<span v-else> <strong>Device name: </strong>{{ session?.userAgent?.device?.family }}</span>
+				</div>
+				<div class="flex items-center gap-2">
+					<span>{{ new Date(session.creationDtm).toLocaleDateString('en-US') }}</span>
+					<button
+						v-if="!session?.isCurrent"
+						@click="logoutSession(session)"
+						class="border grid place-items-center p-2 h-8 w-8 aspect-square leading-none"
+					>
+						X
+					</button>
+				</div>
+			</li>
+		</ul>
+	</div>
 </template>
 ```
 
