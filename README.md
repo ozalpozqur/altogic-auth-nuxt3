@@ -151,7 +151,7 @@ useHead({
 
 ### Replacing pages/login.vue with the following code:
 ```vue
-<script setup lang="ts">
+<script setup>
 import { useAuthStore } from '~/stores/useAuth';
 
 const router = useRouter();
@@ -223,7 +223,7 @@ async function loginHandler() {
 
 ### Replacing pages/login-with-magic-link.vue with the following code:
 ```vue
-<script setup lang="ts">
+<script setup>
 import altogic from '~/libs/altogic';
 
 const successMessage = ref('');
@@ -285,7 +285,7 @@ async function loginHandler() {
 
 ### Replacing pages/register.vue with the following code:
 ```vue
-<script setup lang="ts">
+<script setup>
 import { useAuthStore } from '~/stores/useAuth';
 
 const auth = useAuthStore();
