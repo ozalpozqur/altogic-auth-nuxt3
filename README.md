@@ -76,9 +76,35 @@ Open altogic-auth-nuxt3 folder in Visual Studio Code:
 ```bash
 code altogic-auth-nuxt3
 ```
-## Installing Altogic Client Library
+## Integrating with Altogic
+Our backend and frontend is now ready and running on the server. ✨
+
+Now, we can install the Altogic client library to our Nuxt 3 app to connect our frontend with the backend.
 ```bash
+# using npm
 npm install altogic
+# OR is using yarn
+yarn add altogic
+```
+Let’s create a libs/ folder inside your root directory to add altogic.js file.
+
+Open altogic.js and paste below code block to export the altogic client instance.
+
+```js
+// libs/altogic.js
+import { createClient } from 'altogic';
+
+const ENV_URL = 'https://pn45-90sr.c1-europe.altogic.com';
+const CLIENT_KEY = '7427b15c87f34ad9a80e16a382d7fd06';
+const API_KEY =
+	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnZJZCI6IjYzNWZiMGI3OTE4YjlmY2NmMzQ3ZjI2YiIsImtleUlkIjoiNjM1ZmIwYjk5MThiOWZjY2YzNDdmMjdjIiwiaWF0IjoxNjY3MjE1NTQ1LCJleHAiOjI1MzEyMTU1NDV9.wX7Feyf63WHsWRHQS3QNChyagRs07E0QK5TBwCjXHEE';
+
+const altogic = createClient(ENV_URL, CLIENT_KEY, {
+	apiKey: API_KEY,
+	signInRedirect: '/login',
+});
+
+export default altogic;
 ```
 ## Installing State Management Library
 ```bash
@@ -119,25 +145,6 @@ useHead({
 		<NuxtLink class="border px-4 py-2 font-medium text-xl" to="/register">Register</NuxtLink>
 	</div>
 </template>
-```
-
-## Let's create an Altogic Client instance
-Create a folder named **libs** in your project root directory and put a file named **altogic.js** in it. Then paste the code below into the file.
-```js
-// libs/altogic.js
-import { createClient } from 'altogic';
-
-const ENV_URL = 'https://pn45-90sr.c1-europe.altogic.com';
-const CLIENT_KEY = '7427b15c87f34ad9a80e16a382d7fd06';
-const API_KEY =
-	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnZJZCI6IjYzNWZiMGI3OTE4YjlmY2NmMzQ3ZjI2YiIsImtleUlkIjoiNjM1ZmIwYjk5MThiOWZjY2YzNDdmMjdjIiwiaWF0IjoxNjY3MjE1NTQ1LCJleHAiOjI1MzEyMTU1NDV9.wX7Feyf63WHsWRHQS3QNChyagRs07E0QK5TBwCjXHEE';
-
-const altogic = createClient(ENV_URL, CLIENT_KEY, {
-	apiKey: API_KEY,
-	signInRedirect: '/login',
-});
-
-export default altogic;
 ```
 
 ### Replacing pages/login.vue with the following code:
