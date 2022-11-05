@@ -635,7 +635,6 @@ export default defineNuxtRouteMiddleware(() => {
 
 ## Avatar Component for uploading profile picture
 ```vue
-<!-- components/Avatar.vue -->
 <script setup>
 import altogic from '~/libs/altogic';
 
