@@ -582,7 +582,6 @@ export default defineEventHandler(async event => {
 		event.context.session_token = token;
 	}
 });
-
 ```
 
 ## Create Middleware Folder
