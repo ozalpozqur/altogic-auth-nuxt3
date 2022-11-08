@@ -128,6 +128,7 @@ Let's create some views in **pages/** folder as below:
 ![Alt text](github/pages.png "vscode preview")
 
 ### Replacing pages/index.vue with the following code:
+In this page, we will show Login, Login With Magic Link and Register buttons.
 ```vue
 <script setup>
 definePageMeta({
@@ -140,9 +141,7 @@ useHead({
 
 <template>
 	<div class="flex items-center justify-center gap-4 h-screen">
-		<NuxtLink class="border px-4 py-2 font-medium text-xl" to="/login-with-magic-link"
-		>Login With Magic Link</NuxtLink
-		>
+		<NuxtLink class="border px-4 py-2 font-medium text-xl" to="/login-with-magic-link">Login With Magic Link</NuxtLink>
 		<NuxtLink class="border px-4 py-2 font-medium text-xl" to="/login">Login</NuxtLink>
 		<NuxtLink class="border px-4 py-2 font-medium text-xl" to="/register">Register</NuxtLink>
 	</div>
@@ -150,6 +149,7 @@ useHead({
 ```
 
 ### Replacing pages/login.vue with the following code:
+In this page, we will show a form to log in with email and password. We will use Altogic's **altogic.auth.signInWithEmail()** function to log in.
 ```vue
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
@@ -222,6 +222,7 @@ async function loginHandler() {
 ```
 
 ### Replacing pages/login-with-magic-link.vue with the following code:
+In this page, we will show a form to **log in with Magic Link** with only email. We will use Altogic's **altogic.auth.sendMagicLinkEmail()** function to log in.
 ```vue
 <script setup>
 import altogic from '~/libs/altogic';
@@ -284,6 +285,7 @@ async function loginHandler() {
 ```
 
 ### Replacing pages/register.vue with the following code:
+In this page, we will show a form to sign up with email and password. We will use Altogic's **altogic.auth.signUpWithEmail()** function to log in.
 ```vue
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
@@ -379,6 +381,7 @@ async function registerHandler() {
 ```
 
 ### Replacing pages/profile.vue with the following code:
+In this page, we will show the user's profile.
 ```vue
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
@@ -406,6 +409,7 @@ useHead({
 ```
 
 ### Replacing pages/auth-redirect.vue with the following code:
+We use this page for verify the user's email address and **Login With Magic Link Authentication**.
 ```vue
 <script setup>
 const auth = useAuthStore();
@@ -515,6 +519,7 @@ export default defineEventHandler(async event => {
 ```
 
 ### Replacing server/api/register.post.js with the following code:
+In this file, we have created an endpoint for users to register. And here we are logging in by assigning the session token returned from altogic to the cookie.
 ```js
 import altogic from '~/libs/altogic';
 
@@ -537,6 +542,7 @@ export default defineEventHandler(async event => {
 ```
 
 ### Replacing server/api/logout.js with the following code:
+In this file, we have created an endpoint for users to logout. And here we are logging out by removing the session token from the cookie.
 ```js
 import altogic from '~/libs/altogic';
 
@@ -549,6 +555,7 @@ export default defineEventHandler(async event => {
 ```
 
 ### Replacing server/api/verify-user.js with the following code:
+In this file, we have created an endpoint for users to verify their email address. And here we are logging in by assigning the session token returned from altogic to the cookie.
 ```js
 import altogic from '~/libs/altogic';
 
@@ -633,6 +640,7 @@ export default defineNuxtRouteMiddleware(() => {
 
 
 ## Avatar Component for uploading profile picture
+In this component, we will use Altogic's **altogic.storage.bucket('root').upload()** function to upload the image to the storage.
 ```vue
 <script setup>
 import altogic from '~/libs/altogic';
@@ -699,6 +707,7 @@ async function updateUser(data) {
 ```
 
 ## UserInfo Component for updating username
+In this component, we will use Altogic's database operations to update the user's name.
 ```vue
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
@@ -762,6 +771,7 @@ async function saveName() {
 ```
 
 ## Sessions Component for managing sessions
+In this component, we will use Altogic's **altogic.auth.getAllSessions()** to get the user's sessions and delete them.
 ```vue
 <script setup>
 import altogic from '../libs/altogic';
