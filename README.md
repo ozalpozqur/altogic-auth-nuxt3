@@ -58,10 +58,9 @@ Then click Next and select Basic Authentication template. This template is based
 
 Then click Next to confirm and create an app.
 
-Awesome! We have created our application; now click/tap on the **newly created app to launch the Designer.**
+Awesome! We have created our application; now click/tap on the **newly created app to launch the Designer.** In order to access the app and use the Altogic client library, we should get `envUrl` and `clientKey` of this app. You can use any one of the API base URLs specified for your app environment as your envUrl.
 
-> This is the only configuration we need to do in Altogic Designer. In order to access the app and use the Altogic client library, we should get envUrl and clientKey of this app.
-Click the **Home** icon at the left sidebar to copy the envUrl and clientKey.
+Click the **Home** icon at the left sidebar to copy the `envUrl` and `clientKey`.
 
 ![Client Keys](github/4-client-keys.png)
 
