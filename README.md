@@ -789,7 +789,7 @@ async function saveName() {
 ```
 
 ## Sessions Component for managing sessions
-In this component, we will use Altogic's **altogic.auth.getAllSessions()** to get the user's sessions and delete them.
+In this component, we will use Altogic's `altogic.auth.getAllSessions()` to get the user's sessions and delete them.
 ```vue
 <script setup>
 import altogic from '../libs/altogic';
