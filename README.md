@@ -570,6 +570,10 @@ export default defineEventHandler(async event => {
 
 ### Replacing server/api/verify-user.js with the following code:
 In this file, we have created an endpoint for users to verify their email address. And here we are logging in by assigning the session token returned from altogic to the cookie.
+
+We will use Altogic's `altogic.auth.getAuthGrant()` function to log in with the handled token from the URL.
+
+Replacing `pages/auth-redirect.js` with the following code:
 ```js
 import altogic from '~/libs/altogic';
 
