@@ -1,6 +1,5 @@
 # How to Authenticate Email and Password Using Nuxt 3 & Altogic
 
-
 ## Introduction
 [Altogic](https://www.altogic.com) is a Backend as a Service (BaaS) platform and provides a variety of services in modern web and mobile development. Most modern applications using React or other libraries/frameworks require knowing the identity of a user. And this necessity allows an app to securely save user data and session in the cloud and provide more personalized functionalities and views to users.
 
@@ -21,19 +20,19 @@ After completion of this tutorial, you will learn the following:
 If you are new to Vue applications, this tutorial is definitely for you to understand the basics and even advanced concepts.
 
 
-## Prerequisites
-To complete this tutorial, make sure you have installed the following tools and utilities on your local development environment.
-- [VsCode](https://code.visualstudio.com/download)
-- [NodeJS](https://nodejs.org/en/download/)
-- [Nuxt.js App](https://v3.nuxtjs.org/getting-started/installation)
-- You also need an Altogic Account. If you do not have one, you can create an account by [signin up for Altogic](https://designer.altogic.com/).
-
 ## How email-based sign-up works in Altogic
 By default, when you create an app in Altogic, email-based authentication is enabled. In addition, during email-based authentication, the email address of the user is also verified. Below you can find the flow of email and password-based sign-up process.
 
 ![Authentication Flow](./github/auth-flow.png)
 
 If email verification is disabled, then after step 2, Altogic immediately returns a new session to the user, meaning that steps after step #2 in the above flow are not executed. You can easily configure email-based authentication settings from the **App Settings > Authentication** in Altogic Designer. One critical parameter you need to specify is the Redirect URL, you can also customize this parameter from **App Settings > Authentication**. Finally, you can also customize the email message template from the A**pp Settings > Authentication > Messaget Templates**.
+
+## Prerequisites
+To complete this tutorial, make sure you have installed the following tools and utilities on your local development environment.
+- [VsCode](https://code.visualstudio.com/download)
+- [NodeJS](https://nodejs.org/en/download/)
+- [Nuxt.js App](https://v3.nuxtjs.org/getting-started/installation)
+- You also need an Altogic Account. If you do not have one, you can create an account by [sign-in up for Altogic](https://designer.altogic.com/).
 
 
 ## Creating an Altogic App
@@ -51,10 +50,12 @@ Click + New app and follow the instructions;
 
 ![Create App](github/2-create-app.png)
 
-Then click Next and select Basic Authentication template. This template is creates a default user model for your app which is required by [Altogic Client Library](https://github.com/altogic/altogic-js) to store user data and manage authentication.
+Then click Next and select Basic template. **This template creates a default user data model for your app which is required by [Altogic Client Library](https://www.npmjs.com/package/altogic) to store user data and manage authentication.** You can add additional user fields to this data model (e.g., name, surname, gender, birthdate) and when calling the `signUpWithEmail` method of the client library you can pass these additional data.
 
-Then click Next and select Basic Authentication template. This template is based on session authentication and highly recommended to secure your apps.
+
 ![Choose Template](github/3-choose-template.png)
+> **Tip:** If you do not select the basic template, instead selected the blank app template the user data model will not be created for your app. In order to use the Altogic Client Library's authentication methods you need a user data model to store the user data. You can easily create a new data model manually and from the **App Settings > Authentication** mark this new data model as your user data model.
+
 
 Then click Next to confirm and create an app.
 
@@ -63,8 +64,11 @@ Awesome! We have created our application; now click/tap on the **newly created a
 Click the **Home** icon at the left sidebar to copy the `envUrl` and `clientKey`.
 
 ![Client Keys](github/4-client-keys.png)
+Once the user is created successfully, our Next.js app will route the user to the Verification page, and a verification email will be sent to the user's email address. When the user clicks the link in the mail, the user will navigate to the redirect page to grant authentication rights. After successfully creating a session on the Redirect page, users will be redirected to the Home page.
 
-Once the user created successfully, our Vue.js app will route the user to the Verification page, and a verification email will be sent to the user’s email address. When the user clicks the link in the mail, the user will navigate to the redirect page to grant authentication rights. After successfully creating a session on the Redirect page, users will be redirected to the Home page.
+> If you want, you can deactivate or customize the mail verification from **App Settings -> Authentication** in Logic Designer.
+
+![Mail](github/15-mail.png)
 
 ## Create a Nuxt 3 project
 Make sure you have an up-to-date version of Node.js installed, then run the following command in your command line
@@ -221,7 +225,7 @@ async function loginHandler() {
 ```
 
 ### Replacing pages/login-with-magic-link.vue with the following code:
-In this page, we will show a form to **log in with Magic Link** with only email. We will use Altogic's **altogic.auth.sendMagicLinkEmail()** function to log in.
+In this page, we will show a form to **log in with Magic Link** with only email. We will use Altogic's `altogic.auth.sendMagicLinkEmail()` function to sending magic link to user's email.
 ```vue
 <script setup>
 import altogic from '~/libs/altogic';
@@ -288,7 +292,7 @@ In this page, we will show a form to sign up with email and password. We will us
 
 We will save session and user infos to state and storage if the api return session. Then user will be redirected to profile page.
 
-If signUpWithEmail does not return session, it means user need to confirm email, so we will show the success message.
+If `signUpWithEmail` does not return session, it means user need to confirm email, so we will show the success message.
 
 ```vue
 <script setup>
@@ -497,12 +501,14 @@ if (import.meta.hot) {
 }
 ```
 
-# Let's get to the most important point
+# Handling Authentication In Server Side
+This is most important part of the project. We will handle authentication in server side. We will use `altogic` library to handle authentication in server side.
+
 Nuxt is a server side rendering tool, we will do some operations on the backend. So we need to create a folder named **server** in our project root directory.
 
 
 ## Let's create a server folder
-Create a folder named **server** in your project root directory.
+Create a folder named `server` in your project root directory.
 
 And create files in server folder like image in below
 ![Application](github/server-folder.png)
@@ -600,13 +606,13 @@ export default defineEventHandler(async event => {
 ```
 
 ## Create Middleware Folder
-Create a folder named **middleware** in your project root directory.
+Create a folder named `middleware` in your project root directory.
 
-And create files in middleware folder like image in below
+And create files in **middleware** folder like image in below
 ![Application](github/middleware.png)
 
 ### Replacing middleware/auth.global.js with the following code:
-In this file, we update our state by checking the variable that we have previously assigned in auth.js, which is the server middleware.
+In this file, we update our state by checking the variable that we have previously assigned in **auth.js**, which is the server middleware.
 ```js
 import { useAuthStore } from '~/stores/useAuth';
 
@@ -622,7 +628,7 @@ export default defineNuxtRouteMiddleware(() => {
 ```
 
 ### Replacing middleware/auth.js with the following code:
-The middleware we created for our protected routes
+This middleware checks if the user is logged in or not. If the user is not logged in, it redirects the user to the login page.
 ```js
 import { useAuthStore } from '~/stores/useAuth';
 
@@ -634,7 +640,7 @@ export default defineNuxtRouteMiddleware(async () => {
 ```
 
 ### Replacing middleware/guest.js with the following code:
-The middleware we created for our unprotected routes
+This middleware checks if the user is logged in or not. If the user is logged in, it redirects the user to the profile page.
 ```js
 import { useAuthStore } from '~/stores/useAuth';
 
@@ -714,7 +720,7 @@ async function updateUser(data) {
 </template>
 ```
 
-## UserInfo Component for updating username
+## UserInfo Component for updating user's name
 In this component, we will use Altogic's database operations to update the user's name.
 ```vue
 <script setup>
