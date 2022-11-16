@@ -1,9 +1,9 @@
-# How to Authenticate Email and Password Using Nuxt 3 & Altogic
+# Email & Password Based Authentication Using Nuxt 3 & Altogic
 
 ## Introduction
-[Altogic](https://www.altogic.com) is a Backend as a Service (BaaS) platform and provides a variety of services in modern web and mobile development. Most modern applications using React or other libraries/frameworks require knowing the identity of a user. And this necessity allows an app to securely save user data and session in the cloud and provide more personalized functionalities and views to users.
+[Altogic](https://www.altogic.com) is a Backend as a Service (BaaS) platform and provides a variety of services in modern web and mobile development. Most modern applications using Nuxt 3 or other libraries/frameworks require knowing the identity of a user. And this necessity allows an app to securely save user data and session in the cloud and provide more personalized functionalities and views to users.
 
-Altogic has an authentication service that integrates and implements well in JAMstack apps. It has a ready-to-use [Javascript client library](https://www.npmjs.com/package/altogic), and it supports many authentication providers such as email/password, phone number, magic link, and OAuth providers like Google, Facebook, Twitter, Github, etc.,
+Altogic has an authentication service that integrates and implements well in JAMstack apps. It has a ready-to-use [Javascript client library](https://www.npmjs.com/package/altogic), and it supports many authentication providers such as email/password, phone number, magic link, and OAuth providers like Google, Facebook, Twitter, Github, Apple etc.,
 
 In this tutorial, we will implement email/password authentication with Nuxt 3 and take a look at how as a Nuxt 3 developer, we build applications and integrate with Altogic Authentication.
 
@@ -25,7 +25,9 @@ By default, when you create an app in Altogic, email-based authentication is ena
 
 ![Authentication Flow](./github/auth-flow.png)
 
-If email verification is disabled, then after step 2, Altogic immediately returns a new session to the user, meaning that steps after step #2 in the above flow are not executed. You can easily configure email-based authentication settings from the **App Settings > Authentication** in Altogic Designer. One critical parameter you need to specify is the Redirect URL, you can also customize this parameter from **App Settings > Authentication**. Finally, you can also customize the email message template from the A**pp Settings > Authentication > Messaget Templates**.
+If email verification is disabled, then after step 2, Altogic immediately returns a new session to the user, meaning that steps after step #2 in the above flow are not executed. You can easily configure email-based authentication settings from the **App Settings > Authentication** in Altogic Designer. One critical parameter you need to specify is the Redirect URL, you can customize this parameter from **App Settings > Authentication**. Finally, you can customize the email message template from the A**pp Settings > Authentication > Messaget Templates**.
+
+> For frontend apps that use server-side rendering, the session token needs to be stored in an HTTP cookie so that the client browser and the frontend server can exchange session information. Otherwise, the session information can be lost, and the Altogic Client library methods that require a session token can fail.
 
 ## Prerequisites
 To complete this tutorial, make sure you have installed the following tools and utilities on your local development environment.
@@ -64,11 +66,11 @@ Awesome! We have created our application; now click/tap on the **newly created a
 Click the **Home** icon at the left sidebar to copy the `envUrl` and `clientKey`.
 
 ![Client Keys](github/4-client-keys.png)
-Once the user is created successfully, our Next.js app will route the user to the Verification page, and a verification email will be sent to the user's email address. When the user clicks the link in the mail, the user will navigate to the redirect page to grant authentication rights. After successfully creating a session on the Redirect page, users will be redirected to the Home page.
+Once the user is created successfully, our Nuxt 2 app will route the user to the Verification page, and a verification email will be sent to the user's email address. When the user clicks the link in the mail, the user will navigate to the redirect page to grant authentication rights. After successfully creating a session on the Redirect page, users will be redirected to the Home page.
 
 > If you want, you can deactivate or customize the mail verification from **App Settings -> Authentication** in Logic Designer.
 
-![Mail](github/15-mail.png)
+![Mail](github/mail.png)
 
 ## Create a Nuxt 3 project
 Make sure you have an up-to-date version of Node.js installed, then run the following command in your command line
@@ -99,17 +101,16 @@ import { createClient } from 'altogic';
 
 const ENV_URL = ''; // replace with your envUrl
 const CLIENT_KEY = ''; // replace with your clientKey
-const API_KEY = ''; // replace with your apiKey
 
 const altogic = createClient(ENV_URL, CLIENT_KEY, {
-	apiKey: API_KEY,
 	signInRedirect: '/login',
 });
 
 export default altogic;
 ```
-> Replace ENV_URL, CLIENT_KEY and API_KEY which is shown in the <strong>Home</strong> view of [Altogic Designer](https://designer.altogic.com/).
+> Replace ENV_URL, CLIENT_KEY and API_KEY which is shown in the **Home** view of [Altogic Designer](https://designer.altogic.com/).
 
+>`signInRedirect` is the sign in page URL to redirect the user when user's session becomes invalid. Altogic client library observes the responses of the requests made to your app backend. If it detects a response with an error code of missing or invalid session token, it can redirect the users to this signin url.
 
 ## Installing State Management Library
 ```bash
@@ -133,6 +134,7 @@ Let's create some views in **pages/** folder as below:
 ### Replacing pages/index.vue with the following code:
 In this page, we will show Login, Login With Magic Link and Register buttons.
 ```vue
+<!-- pages/index.vue -->
 <script setup>
 definePageMeta({
 	middleware: ['guest'],
@@ -152,8 +154,9 @@ useHead({
 ```
 
 ### Replacing pages/login.vue with the following code:
-In this page, we will show a form to log in with email and password. We will use fetch function to call our backend api. We will save session and user infos to state and storage if the api return success. Then user will be redirected to profile page.
+In this page, we will show a form to log in with email and password. We will use fetch function to call our backend api. We will save session and user info to state and storage if the api return success. Then user will be redirected to profile page.
 ```vue
+<!-- pages/login.vue -->
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
 
@@ -226,7 +229,11 @@ async function loginHandler() {
 
 ### Replacing pages/login-with-magic-link.vue with the following code:
 In this page, we will show a form to **log in with Magic Link** with only email. We will use Altogic's `altogic.auth.sendMagicLinkEmail()` function to sending magic link to user's email.
+
+When the user clicks on the magic link in the email, Altogic verifies the validity of the magic link and, if successful, redirects the user to the redirect URL specified in your app authentication settings with an access token in a query string parameter named `access_token` The magic link flows in a similar way to the sign-up process. We use the `getAuthGrant()` method to create a new session and associated `sessionToken`.
+
 ```vue
+<!-- pages/login-with-magic-link.vue -->
 <script setup>
 import altogic from '~/libs/altogic';
 
@@ -288,13 +295,15 @@ async function loginHandler() {
 ```
 
 ### Replacing pages/register.vue with the following code:
-In this page, we will show a form to sign up with email and password. We will use fetch function to call our sign-up api.
+In this page, we will show a form to sign up with email and password. We will use **remix's action** call our backend api.
 
-We will save session and user infos to state and storage if the api return session. Then user will be redirected to profile page.
+We will save session and user info to state if the api returns session. Then, user will be redirected to profile page.
 
 If `signUpWithEmail` does not return session, it means user need to confirm email, so we will show the success message.
+> **Note:** `signUpWithEmail` function can accept optional  third parameter data to save the user's profile. We will save the user's name to the database in this example.
 
 ```vue
+<!-- pages/register.vue -->
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
 
@@ -391,10 +400,12 @@ async function registerHandler() {
 ### Replacing pages/profile.vue with the following code:
 In this page, we will show the user's profile, and We will use our sign-out api route.
 
-We will remove session and user infos from state and storage if signOut api return success. Then user will be redirected to login page.
+We will remove session and user info from state and storage if signOut api returns success. Then, user will be redirected to login page.
 
-This page is protected. Before page loaded, We will check cookie. If there is token, and it's valid, we will sign in and fetch user, session information. If there is not or not valid, the user will be redirected to sign in page.
+This page is protected. Before page loaded, We will check cookie. If there is **sessionToken**, and it's valid, we will sign in and fetch user, session information. If there is not or not valid, the user will be redirected to sign in page.
+
 ```vue
+<!-- pages/profile.vue -->
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
 const auth = useAuthStore();
@@ -421,8 +432,10 @@ useHead({
 ```
 
 ### Replacing pages/auth-redirect.vue with the following code:
-We use this page for verify the user's email address and **Login With Magic Link Authentication**.
+In this page we use the `getAuthGrant()` method to create a new session and associated `sessionToken` for verify email or sign in with magic link.
+
 ```vue
+<!-- pages/auth-redirect.vue -->
 <script setup>
 const auth = useAuthStore();
 const route = useRoute();
@@ -464,6 +477,9 @@ onMounted(async () => {
 
 ## Let's create authentication store
 Create a folder named **stores** in your project root folder and put a file named **useAuth.js** in it. Then paste the code below into the file.
+
+We will use this store to manage user and session information.
+
 ```js
 // stores/useAuth.js
 import altogic from '~/libs/altogic';
@@ -502,9 +518,11 @@ if (import.meta.hot) {
 ```
 
 # Handling Authentication In Server Side
-This is most important part of the project. We will handle authentication in server side. We will use `altogic` library to handle authentication in server side.
+This is the most important part of the project. We will handle authentication in server side. We will use `altogic` library to handle authentication in server side.
 
-Nuxt is a server side rendering tool, we will do some operations on the backend. So we need to create a folder named **server** in our project root directory.
+For client-side (browser) rendered frontend apps, Altogic automatically stores the `sessionToken` in local storage. For server-side rendered frontend apps, since we do not have local storage available, we need to store the `sessionToken` somewhere to check whether the user has been authenticated or not. For this reason, we will store the `sessionToken` in an HTTP cookie named `session` which will be exchanged between the client browser and the front end server.
+
+Nuxt is a server side rendering tool, we will do some operations on the backend. So we need to create a folder named `server/` in our project root directory.
 
 
 ## Let's create a server folder
@@ -516,6 +534,7 @@ And create files in server folder like image in below
 ### Replacing server/api/login.post.js with the following code:
 In this file, we have created an endpoint for users to login. And here we are logging in by assigning the session token returned from altogic to the cookie.
 ```js
+// server/api/login.post.js
 import altogic from '~/libs/altogic';
 
 export default defineEventHandler(async event => {
@@ -535,6 +554,7 @@ export default defineEventHandler(async event => {
 ### Replacing server/api/register.post.js with the following code:
 In this file, we have created an endpoint for users to register. And here we are logging in by assigning the session token returned from altogic to the cookie.
 ```js
+// server/api/register.post.js
 import altogic from '~/libs/altogic';
 
 export default defineEventHandler(async event => {
@@ -558,6 +578,7 @@ export default defineEventHandler(async event => {
 ### Replacing server/api/logout.js with the following code:
 In this file, we have created an endpoint for users to logout. And here we are logging out by removing the session token from the cookie.
 ```js
+// server/api/logout.js
 import altogic from '~/libs/altogic';
 
 export default defineEventHandler(async event => {
@@ -573,8 +594,10 @@ In this file, we have created an endpoint for users to verify their email addres
 
 We will use Altogic's `altogic.auth.getAuthGrant()` function to log in with the handled token from the URL.
 
+
 Replacing `pages/auth-redirect.js` with the following code:
 ```js
+// pages/auth-redirect.js
 import altogic from '~/libs/altogic';
 
 export default defineEventHandler(async event => {
@@ -595,6 +618,7 @@ export default defineEventHandler(async event => {
 ### Replacing server/middleware/auth.js with the following code:
 In this file, we pull the user from altogic with the token in the cookie according to the login status of the user.
 ```js
+// server/middleware/auth.js
 import altogic from '~/libs/altogic';
 
 export default defineEventHandler(async event => {
@@ -618,6 +642,7 @@ And create files in **middleware** folder like image in below
 ### Replacing middleware/auth.global.js with the following code:
 In this file, we update our state by checking the variable that we have previously assigned in **auth.js**, which is the server middleware.
 ```js
+// middleware/auth.global.js
 import { useAuthStore } from '~/stores/useAuth';
 
 export default defineNuxtRouteMiddleware(() => {
@@ -634,6 +659,7 @@ export default defineNuxtRouteMiddleware(() => {
 ### Replacing middleware/auth.js with the following code:
 This middleware checks if the user is logged in or not. If the user is not logged in, it redirects the user to the login page.
 ```js
+// middleware/auth.js
 import { useAuthStore } from '~/stores/useAuth';
 
 export default defineNuxtRouteMiddleware(async () => {
@@ -646,6 +672,7 @@ export default defineNuxtRouteMiddleware(async () => {
 ### Replacing middleware/guest.js with the following code:
 This middleware checks if the user is logged in or not. If the user is logged in, it redirects the user to the profile page.
 ```js
+// middleware/guest.js
 import { useAuthStore } from '~/stores/useAuth';
 
 export default defineNuxtRouteMiddleware(() => {
@@ -658,8 +685,11 @@ export default defineNuxtRouteMiddleware(() => {
 
 
 ## Avatar Component for uploading profile picture
-Open Avatar.js and paste the below code to create an avatar for the user. For convenience, we will be using the user's name as the name of the uploaded file and upload the profile picture to the root directory of our app storage. If needed you can create different buckets for each user or a generic bucket to store all provided photos of users. The Altogic Client Library has all the methods to manage buckets and files.
+Open Avatar.js and paste the below code to create an avatar for the user. 
+
+For convenience, we will be using the user's `_id` as the name of the uploaded file and upload the profile picture to the root directory of our app storage. If needed you can create different buckets for each user or a generic bucket to store all provided photos of users. The Altogic Client Library has all the methods to manage buckets and files.
 ```vue
+<!-- components/Avatar.vue -->
 <script setup>
 import altogic from '~/libs/altogic';
 
@@ -669,7 +699,7 @@ const errors = ref(null);
 
 const userPicture = computed(() => {
 	return (
-		auth?.user?.profilePicture || 'https://ui-avatars.com/api/?name=' + auth?.user?.name
+		auth?.user?.profilePicture || `https://ui-avatars.com/api/?name=${auth?.user?.name}&background=0D8ABC&color=fff`
 	);
 });
 
@@ -691,7 +721,7 @@ async function changeHandler(e) {
 }
 
 async function updateProfilePicture(file) {
-	const { data, errors } = await altogic.storage.bucket('root').upload(auth.user.name, file);
+	const { data, errors } = await altogic.storage.bucket('root').upload(`user_${auth.user._id}`, file);
 	if (errors) throw new Error("Couldn't upload file");
 	return data;
 }
@@ -727,6 +757,7 @@ async function updateUser(data) {
 ## UserInfo Component for updating user's name
 In this component, we will use Altogic's database operations to update the user's name.
 ```vue
+<!-- components/UserInfo.vue -->
 <script setup>
 import { useAuthStore } from '~/stores/useAuth';
 import altogic from '~/libs/altogic';
@@ -791,6 +822,7 @@ async function saveName() {
 ## Sessions Component for managing sessions
 In this component, we will use Altogic's `altogic.auth.getAllSessions()` to get the user's sessions and delete them.
 ```vue
+<!-- components/Sessions.vue -->
 <script setup>
 import altogic from '../libs/altogic';
 

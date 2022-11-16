@@ -29,7 +29,7 @@ async function changeHandler(e) {
 }
 
 async function updateProfilePicture(file) {
-	const { data, errors } = await altogic.storage.bucket('root').upload(file.name, file);
+	const { data, errors } = await altogic.storage.bucket('root').upload(`user_${auth.user._id}`, file);
 	if (errors) throw new Error("Couldn't upload file");
 	return data;
 }
