@@ -154,7 +154,7 @@ useHead({
 ```
 
 ### Replacing pages/login.vue with the following code:
-In this page, we will show a form to log in with email and password. We will use fetch function to call our backend api. We will save session and user info to state and storage if the api return success. Then user will be redirected to profile page.
+In this page, we will show a form to log in with email and password. We will use fetch function to call our backend api. We will save session and user info to state and storage if the api returns success. Then user will be redirected to profile page.
 ```vue
 <!-- pages/login.vue -->
 <script setup>
