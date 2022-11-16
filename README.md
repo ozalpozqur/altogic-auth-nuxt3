@@ -692,9 +692,7 @@ const loading = ref(false);
 const errors = ref(null);
 
 const userPicture = computed(() => {
-	return (
-		auth?.user?.profilePicture || `https://ui-avatars.com/api/?name=${auth?.user?.name}&background=0D8ABC&color=fff`
-	);
+	return auth?.user?.profilePicture || 'https://ui-avatars.com/api/?name=' + auth?.user?.name;
 });
 
 async function changeHandler(e) {
