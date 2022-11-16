@@ -108,7 +108,7 @@ const altogic = createClient(ENV_URL, CLIENT_KEY, {
 
 export default altogic;
 ```
-> Replace ENV_URL, CLIENT_KEY and API_KEY which is shown in the **Home** view of [Altogic Designer](https://designer.altogic.com/).
+> Replace ENV_URL and CLIENT_KEY which is shown in the **Home** view of [Altogic Designer](https://designer.altogic.com/).
 
 >`signInRedirect` is the sign in page URL to redirect the user when user's session becomes invalid. Altogic client library observes the responses of the requests made to your app backend. If it detects a response with an error code of missing or invalid session token, it can redirect the users to this signin url.
 
