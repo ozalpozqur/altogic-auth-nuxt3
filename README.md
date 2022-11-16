@@ -66,7 +66,7 @@ Awesome! We have created our application; now click/tap on the **newly created a
 Click the **Home** icon at the left sidebar to copy the `envUrl` and `clientKey`.
 
 ![Client Keys](github/4-client-keys.png)
-Once the user is created successfully, our Nuxt 2 app will route the user to the Verification page, and a verification email will be sent to the user's email address. When the user clicks the link in the mail, the user will navigate to the redirect page to grant authentication rights. After successfully creating a session on the Redirect page, users will be redirected to the Home page.
+Once the user is created successfully, our Nuxt 3 app will route the user to the Verification page, and a verification email will be sent to the user's email address. When the user clicks the link in the mail, the user will navigate to the redirect page to grant authentication rights. After successfully creating a session on the Redirect page, users will be redirected to the Home page.
 
 > If you want, you can deactivate or customize the mail verification from **App Settings -> Authentication** in Logic Designer.
 
@@ -295,13 +295,7 @@ async function loginHandler() {
 ```
 
 ### Replacing pages/register.vue with the following code:
-In this page, we will show a form to sign up with email and password. We will use **remix's action** call our backend api.
-
-We will save session and user info to state if the api returns session. Then, user will be redirected to profile page.
-
-If `signUpWithEmail` does not return session, it means user need to confirm email, so we will show the success message.
-> **Note:** `signUpWithEmail` function can accept optional  third parameter data to save the user's profile. We will save the user's name to the database in this example.
-
+In this page, we will show a form to sign up with email and password. We will use **Nuxt Server** call our backend api.
 ```vue
 <!-- pages/register.vue -->
 <script setup>
@@ -553,6 +547,10 @@ export default defineEventHandler(async event => {
 
 ### Replacing server/api/register.post.js with the following code:
 In this file, we have created an endpoint for users to register. And here we are logging in by assigning the session token returned from altogic to the cookie.
+
+If `signUpWithEmail` does not return session, it means user need to confirm email, so we will show the success message.
+> **Note:** `signUpWithEmail` function can accept optional  third parameter data to save the user's profile. We will save the user's name to the database in this example.
+
 ```js
 // server/api/register.post.js
 import altogic from '~/libs/altogic';
@@ -584,7 +582,7 @@ import altogic from '~/libs/altogic';
 export default defineEventHandler(async event => {
 	const token = getCookie(event, 'session_token');
 	await altogic.auth.signOut(token);
-	deleteCookie(event, 'session_token');
+	altogic.auth.removeSessionCookie(event.req, event.res);
 	await sendRedirect(event, '/login');
 });
 ```
