@@ -426,8 +426,7 @@ useHead({
 ```
 
 ### Replacing pages/auth-redirect.vue with the following code:
-In this page we use the `getAuthGrant()` method to create a new session and associated `sessionToken` for verify email or sign in with magic link.
-
+In this page, we will use **Nuxt Server** call our backend api to verify user.
 ```vue
 <!-- pages/auth-redirect.vue -->
 <script setup>
@@ -470,7 +469,7 @@ onMounted(async () => {
 
 
 ## Let's create authentication store
-Create a folder named **stores** in your project root folder and put a file named **useAuth.js** in it. Then paste the code below into the file.
+Create a folder named `stores/` in your project root folder and put a file named **useAuth.js** in it. Then paste the code below into the file.
 
 We will use this store to manage user and session information.
 
@@ -588,10 +587,7 @@ export default defineEventHandler(async event => {
 ```
 
 ### Replacing server/api/verify-user.js with the following code:
-In this file, we have created an endpoint for users to verify their email address. And here we are logging in by assigning the session token returned from altogic to the cookie.
-
-We will use Altogic's `altogic.auth.getAuthGrant()` function to log in with the handled token from the URL.
-
+In this page we use the `getAuthGrant()` method to create a new session and associated `sessionToken` for verify email or sign in with magic link.
 
 Replacing `pages/auth-redirect.js` with the following code:
 ```js
